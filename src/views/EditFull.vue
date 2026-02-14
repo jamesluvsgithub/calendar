@@ -111,6 +111,11 @@
 						@update-end-time="updateEndTime"
 						@update-end-timezone="updateEndTimezone" />
 
+						<div v-if="isRecurringEvent" class="recurring-event-banner">
+							<strong>{{ $t('calendar', 'Recurring Event') }}</strong>
+							<span class="recurrence-details">{{ recurrenceInfo }}</span>
+						</div>
+
 					<div class="app-full__header__details">
 						<div class="app-full__header__details-time">
 							<NcCheckboxRadioSwitch
@@ -462,6 +467,36 @@ export default {
 
 		...mapState(useCalendarObjectInstanceStore, ['calendarObjectInstance']),
 		...mapState(useSettingsStore, ['talkEnabled']),
+
+		isRecurringEvent() {
+            return this.calendarObjectInstance?.recurrenceRule?.frequency !== 'NONE'
+        },
+
+		recurrenceInfo() {
+            const freq = this.calendarObjectInstance?.recurrenceRule?.frequency
+            const interval = this.calendarObjectInstance?.recurrenceRule?.interval
+
+            if (freq === 'NONE') {
+                return null
+            }
+
+            const frequencyLabels = {
+                DAILY: this.$t('calendar', 'Daily'),
+                WEEKLY: this.$t('calendar', 'Weekly'),
+                MONTHLY: this.$t('calendar', 'Monthly'),
+                YEARLY: this.$t('calendar', 'Yearly'),
+            }
+
+            if (interval > 1) {
+                return this.$t('calendar', 'Every {count} {frequency}s', {
+                    count: interval,
+                    frequency: frequencyLabels[freq]?.toLowerCase(),
+                })
+            }
+
+            return frequencyLabels[freq]
+        },
+
 		accessClass() {
 			return this.calendarObjectInstance?.accessClass || null
 		},
@@ -1085,4 +1120,32 @@ export default {
 	height: auto;
 	border-radius: var(--border-radius);
 }
+
+.recurring-event-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    background-color: #e3f2fd;
+    border-left: 4px solid #1976d2;
+    border-radius: 4px;
+    color: #0d47a1;
+    font-size: 0.95rem;
+
+    i {
+        font-size: 1.2rem;
+    }
+
+    strong {
+        font-weight: 600;
+    }
+}
+
+.recurrence-details {
+    margin-left: auto;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
 </style>
